@@ -1,0 +1,81 @@
+services:
+  life_replay-ngrok:
+    image: ngrok/ngrok:latest
+    container_name: life_replay-ngrok
+    restart: no
+    ports:
+      - "${NGROK_UI_PORT}:4040"
+    command: http host.docker.internal:${NGROK_LOCAL_HTTP_REGISTER_PORT}
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    networks:
+      - my-docker-network
+
+  life_replay-traefik:
+    image: traefik:latest
+    container_name: life_replay-traefik
+    restart: no
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 80:80
+      - ${TRAEFIK_UI_PORT}:9090
+    volumes:
+      # - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./life_replay/traefik/certs:/etc/traefik/certs:ro
+      - ./life_replay/traefik/traefik-data/traefik.yml:/traefik.yml:ro
+      - ./life_replay/traefik/traefik-data/configurations:/configurations
+      - ./life_replay/traefik/traefik-data/acme.json:/acme.json
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=my-docker-network"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=cors@file"
+      - "traefik.http.routers.traefik.middlewares=user-auth@file"
+    networks:
+      - my-docker-network
+
+  life_replay-be_admin_service:
+    image: thanhldt060802/personal-project-life_replay-be_admin_service:develop-latest
+    container_name: life_replay-be_admin_service
+    restart: no
+    # ports:
+    #   - "${BE_ADMIN_SERVICE_PORT}:8000"
+    volumes:
+      - ./life_replay/be_admin_service/config:/app/config
+      - ./life_replay/be_admin_service/tmp:/app/tmp
+    networks:
+      - my-docker-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=my-docker-network"
+      - "traefik.http.routers.admin-service.rule=Host(`${TRAEFIK_DOMAIN}`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.admin-service.entrypoints=web"
+      - "traefik.http.routers.admin-service.middlewares=cors@file"
+      - "traefik.http.services.admin-service.loadbalancer.server.port=8000"
+  
+  life_replay-be_notification_service:
+    image: thanhldt060802/personal-project-life_replay-be_notification_service:develop-latest
+    container_name: life_replay-be_notification_service
+    restart: no
+    # ports:
+    #   - "${BE_NOTIFICATION_SERVICE_PORT}:8000"
+    volumes:
+      - ./life_replay/be_notification_service/config:/app/config
+      - ./life_replay/be_notification_service/tmp:/app/tmp
+    networks:
+      - my-docker-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=my-docker-network"
+      - "traefik.http.routers.notification-service.rule=Host(`${TRAEFIK_DOMAIN}`) && PathPrefix(`/notification`)"
+      - "traefik.http.routers.notification-service.entrypoints=web"
+      - "traefik.http.routers.notification-service.middlewares=cors@file"
+      - "traefik.http.services.notification-service.loadbalancer.server.port=8000"
+
+networks:
+  my-docker-network:
+    external: true
