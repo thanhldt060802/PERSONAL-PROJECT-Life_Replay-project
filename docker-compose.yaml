@@ -39,7 +39,7 @@ services:
       - my_docker_network
 
   life_replay-be_admin_service:
-    image: thanhldt060802/personal-project-life_replay-be_admin_service:develop-latest
+    image: thanhldt060802/personal-project-life_replay-be_admin_service:main-latest
     container_name: life_replay-be_admin_service
     restart: no
     # ports:
@@ -58,7 +58,7 @@ services:
       - "traefik.http.services.admin-service.loadbalancer.server.port=8000"
   
   life_replay-be_notification_service:
-    image: thanhldt060802/personal-project-life_replay-be_notification_service:develop-latest
+    image: thanhldt060802/personal-project-life_replay-be_notification_service:main-latest
     container_name: life_replay-be_notification_service
     restart: no
     # ports:
