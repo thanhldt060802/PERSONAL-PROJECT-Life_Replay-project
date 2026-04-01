@@ -9,7 +9,7 @@ services:
     environment:
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
     networks:
-      - my-docker-network
+      - my_docker_network
 
   life_replay-traefik:
     image: traefik:latest
@@ -29,14 +29,14 @@ services:
       - ./life_replay/traefik/traefik-data/acme.json:/acme.json
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=my-docker-network"
+      - "traefik.docker.network=my_docker_network"
       - "traefik.http.routers.traefik.entrypoints=web"
       - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.middlewares=cors@file"
       - "traefik.http.routers.traefik.middlewares=user-auth@file"
     networks:
-      - my-docker-network
+      - my_docker_network
 
   life_replay-be_admin_service:
     image: thanhldt060802/personal-project-life_replay-be_admin_service:develop-latest
@@ -48,10 +48,10 @@ services:
       - ./life_replay/be_admin_service/config:/app/config
       - ./life_replay/be_admin_service/tmp:/app/tmp
     networks:
-      - my-docker-network
+      - my_docker_network
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=my-docker-network"
+      - "traefik.docker.network=my_docker_network"
       - "traefik.http.routers.admin-service.rule=Host(`${TRAEFIK_DOMAIN}`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-service.entrypoints=web"
       - "traefik.http.routers.admin-service.middlewares=cors@file"
@@ -67,15 +67,15 @@ services:
       - ./life_replay/be_notification_service/config:/app/config
       - ./life_replay/be_notification_service/tmp:/app/tmp
     networks:
-      - my-docker-network
+      - my_docker_network
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=my-docker-network"
+      - "traefik.docker.network=my_docker_network"
       - "traefik.http.routers.notification-service.rule=Host(`${TRAEFIK_DOMAIN}`) && PathPrefix(`/notification`)"
       - "traefik.http.routers.notification-service.entrypoints=web"
       - "traefik.http.routers.notification-service.middlewares=cors@file"
       - "traefik.http.services.notification-service.loadbalancer.server.port=8000"
 
 networks:
-  my-docker-network:
+  my_docker_network:
     external: true
